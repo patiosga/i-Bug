@@ -13,6 +13,7 @@ public class MyRobot extends Agent {
     private LightSensor leftLightSensor;
     private LightSensor rightLightSensor;
     private LightSensor centerLightSensor;
+    private double maxLightIntensity;
     static double K1 = 5;
     static double K2 = 0.8;
     static double K3 = 1;
@@ -26,6 +27,7 @@ public class MyRobot extends Agent {
         leftLightSensor = new LightSensor();
         rightLightSensor = new LightSensor();
         centerLightSensor = new LightSensor();
+        maxLightIntensity = 0.067;
 
         leftLightSensor = RobotFactory.addLightSensorLeft(this);
         rightLightSensor = RobotFactory.addLightSensorRight(this);
@@ -33,29 +35,26 @@ public class MyRobot extends Agent {
 
     }
     public void initBehavior() {
-        setTranslationalVelocity(0.5);
-        setRotationalVelocity(0.5);
+        setTranslationalVelocity(0);
+        setRotationalVelocity(0);
 
     }
     public void performBehavior()
     {
-
-        // Check if sensors are null
-//        if (leftLightSensor == null || rightLightSensor == null) {
-//            System.err.println("Sensors not initialized properly.");
-//            return;
-//        }
-        if (getCounter()%20 ==0) {
-            System.out.println("Center luminance is: " +
-                    centerLightSensor.getLux());
-            System.out.println("Left luminance is: " +
-                    leftLightSensor.getLux());
-            System.out.println("Right luminance is: " +
-                    rightLightSensor.getLux());
-        }
-//
+//        int min = 0;
+//        for (int i=1;i<3;i++)
+//            if (sonars.getMeasurement(i)<sonars.getMeasurement(min))
+//                min=i;
+//        for (int i=6;i<8;i++)
+//            if (sonars.getMeasurement(i)<sonars.getMeasurement(min))
+//                min=i;
+//        if (sonars.getMeasurement(min)<0.5)
+//            circumNavigate(min,true);
+//        else
         this.moveToLight();
     }
+
+
 
 
     public void moveToLight(){
@@ -63,18 +62,21 @@ public class MyRobot extends Agent {
         double rightLight = rightLightSensor.getLux();
         double centerLight = centerLightSensor.getLux();
 
-        double normalized_max_light = 0.067; // min light when the robot is at most 0.6 m away from the light
-        if (normalized_max_light / centerLight > 1)
+        if (this.maxLightIntensity / centerLight < 1)
             this.stop();
-        else if (centerLight > rightLight || centerLight > leftLight) {
-                this.setRotationalVelocity((leftLight - rightLight) * 1000);
-                this.setTranslationalVelocity(1);
-        } else {
-            this.setRotationalVelocity((leftLight - rightLight) * 1000);
+        else if (Math.abs(leftLight - rightLight) < 0.000001) {
+            if (centerLight > rightLight)
+                this.setRotationalVelocity(1);
+            else
+                this.setRotationalVelocity(0);
             this.setTranslationalVelocity(2.3);
+        } else {
+            if rightLight > light
+            this.setRotationalVelocity((leftLight - rightLight) * 1000);
+            this.setTranslationalVelocity(0);
         }
     }
-    public void circumNavigate(boolean CLOCKWISE){
+    public void circumNavigate(int min_sonar_index, boolean CLOCKWISE){
         int min;
         min=0;
         for (int i=1;i<sonars.getNumSensors();i++)

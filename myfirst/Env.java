@@ -18,7 +18,7 @@ public class Env extends EnvironmentDescription {
         light2IsOn = false;
         light2SetPosition(100, 100, 100);
 
-        add(new MyRobot(new Vector3d(0, 0, 0), "robot 1"));
+        add(new MyRobot(new Vector3d(0, 0, 0), "aristofanis"));
         ambientLightColor = black;
         backgroundColor = ligthgray; floorColor = white;
         archColor = red; boxColor = darkgray; wallColor = blue;
