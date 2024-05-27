@@ -21,14 +21,17 @@ public class Env extends EnvironmentDescription {
 
         setWorldSize(20);
 
-        add(new Box(new Vector3d(-2,0,2), new Vector3f(1,1,1),this));
-        add(new Box(new Vector3d(1,0,5), new Vector3f(1,1,1),this));
-        add(new Box(new Vector3d(6,0,5), new Vector3f(1,1,1),this));
-        add(new Box(new Vector3d(1,0,0), new Vector3f(1,1,1),this));
+        add(new Box(new Vector3d(-1,0,1), new Vector3f(1,1,1),this));
         add(new Box(new Vector3d(3,0,3), new Vector3f(1,1,1),this));
+        add(new Box(new Vector3d(7,0,6), new Vector3f(1,1,1),this));
+        add(new Box(new Vector3d(1,0,0), new Vector3f(1,1,1),this));
+        add(new Box(new Vector3d(3,0,4), new Vector3f(1,1,1),this));
+        Arch arch = new Arch(new Vector3d(-2,0,-2), this);
+        add(arch);
+        Wall wall = new Wall(new Vector3d(-5,0,-2), 1, 1, this);
+        add(wall);
 
-
-        add(new MyRobot(new Vector3d(7, 0, 7), "Αριστοφάνης"));
+        add(new MyRobot(new Vector3d(10, 0, 10), "Αριστοφάνης"));
         ambientLightColor = black;
         backgroundColor = ligthgray; floorColor = white;
         archColor = red; boxColor = darkgray; wallColor = blue;

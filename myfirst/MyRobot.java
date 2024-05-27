@@ -20,7 +20,7 @@ public class MyRobot extends Agent {
     private int lightValuesIndex;
     private boolean circumNavigating = false;
     private boolean stop = false;
-    private int countdown = 3;
+    private int lastObjectCounter;
     static double K1 = 5;
     static double K2 = 0.6;
     static double K3 = 1;
@@ -36,9 +36,10 @@ public class MyRobot extends Agent {
         leftLightSensor = new LightSensor();
         rightLightSensor = new LightSensor();
         centerLightSensor = new LightSensor();
-
-        lightValues = new double[3];
+        circumNavigating = false;
+        lightValues = new double[10];
         lightValuesIndex = 0;
+        maxEncounteredLight = 0;
         leftLightSensor = RobotFactory.addLightSensorLeft(this);
         rightLightSensor = RobotFactory.addLightSensorRight(this);
         centerLightSensor = RobotFactory.addLightSensor(this);
@@ -50,30 +51,32 @@ public class MyRobot extends Agent {
     }
     public void performBehavior() {
         int min = 0;
+        if (stop)
+            return;
 
-        for (int i = 1; i < 8; i++) {
+        for (int i = 1; i < 2; i++) {
             if (sonars.getMeasurement(i) < sonars.getMeasurement(min))
                 min = i;
         }
-        lightValues[lightValuesIndex%3] = centerLightSensor.getLux();
+        for (int i = 7; i < 8; i++) {
+            if (sonars.getMeasurement(i) < sonars.getMeasurement(min))
+                min = i;
+        }
+        lightValues[lightValuesIndex%10] = centerLightSensor.getLux();
         lightValuesIndex++;
 
 
         if (sonars.getMeasurement(min) < SAFETY) {
             // μόλις πέσει το centerLightSensor κάτω από το maxEncounteredLight έχω τοπικό μέγιστο οπότε αρχίζει πορεία προς στόχο
-            if (descendingLightOrder() && countdown <= 0) {
+            if (descendingLightOrder() && circumNavigating) {
                 System.out.println("Βρήκα τοπικό μέγιστο");
                 this.moveToLight();
                 circumNavigating = false;
-                countdown = 3;
             } else {
                 System.out.println("Προσπάθεια αποφυγής εμποδίου");
-                this.circumNavigate(true);
+                this.circumNavigate(min, true);
                 circumNavigating = true;
-                countdown--;
             }
-
-
         } else {
             System.out.println("Κίνηση προς το φως");
             this.moveToLight();
@@ -83,8 +86,8 @@ public class MyRobot extends Agent {
     }
 
     private boolean descendingLightOrder() {
-        for (int i = 0; i < 3; i++) {
-            if (lightValues[lightValuesIndex%3] > lightValues[(lightValuesIndex+1)%3] ) {
+        for (int i = 0; i < 10; i++) {
+            if (lightValues[lightValuesIndex%10] > lightValues[(lightValuesIndex+1)%10] ) {
                 return false;
             }
         }
@@ -105,25 +108,28 @@ public class MyRobot extends Agent {
             this.stop();
             stop = true;
         }
-        else if (Math.abs(rightLight - leftLight) > 0.00001) {
-                this.setRotationalVelocity(Math.abs(leftLight - rightLight) * (-3000)); // διόρθωση γωνίας
-                this.setTranslationalVelocity(0);
-        } else {
+        else if (rightLight == leftLight) {
             if (centerLight > rightLight) {
-                this.setRotationalVelocity(-0.2); // μικρή αριστερή περιστροφή για ταρακούνημα και αναστροφή
+                this.setRotationalVelocity(-1); //
                 this.setTranslationalVelocity(0);
-            } else {
+            }
+            else {
                 this.setRotationalVelocity(0);
-                this.setTranslationalVelocity(3);
+                this.setTranslationalVelocity(1);
+            }
+        } else {
+            if (rightLight > leftLight) {
+                this.setRotationalVelocity(-1);
+                this.setTranslationalVelocity(0.3);
+            } else {
+                this.setRotationalVelocity(1);
+                this.setTranslationalVelocity(0.3);
             }
         }
     }
-    public void circumNavigate(boolean CLOCKWISE){
-        int min;
-        min=0;
-        for (int i=1;i<sonars.getNumSensors();i++)
-            if (sonars.getMeasurement(i)<sonars.getMeasurement(min))
-                min=i;
+    public void circumNavigate(int min1, boolean CLOCKWISE){
+        int min = min1;
+
         Point3d p = getSensedPoint(this, sonars,min);
         double d = p.distance(new Point3d(0,0,0));
         Vector3d v;
